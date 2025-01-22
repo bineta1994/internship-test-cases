@@ -16,11 +16,18 @@ def step_impl(context, username, password):
     print(f"Logging in with username: {username} and password: {password}")
     context.app.main_page.log_in(username, password)
 
+
 @when("the user clicks on the settings option")
 def step_impl(context):
-    element = context.app.main_page.find_element(*context.app.main_page.SETTINGS_OPTION)
+    # Wait for the settings option to be clickable
+    element = WebDriverWait(context.driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, "a.menu-button-block[href='/settings']"))
+    )
+
     print(f"Found settings option: {element.text}")  # Debug output
-    context.app.main_page.click(*context.app.main_page.SETTINGS_OPTION)
+
+    # Click on the settings option
+    element.click()
 
 @when("the user clicks on the User Guide option")
 def step_impl(context):
@@ -40,8 +47,14 @@ def step_impl(context):
 
 @then('the User Guide page opens with the title "{expected_title}"')
 def step_impl(context, expected_title):
+    # Wait until the element with class "next-event-text" is present on the page
+    WebDriverWait(context.driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "next-event-text"))
+    )
+
     actual_title = context.driver.title  # Retrieve the page title
     print(f"Actual title: {actual_title}")  # Debugging output
+
     # Perform a case-insensitive comparison
     assert actual_title.lower() == expected_title.lower(), f"Expected title '{expected_title}' but found '{actual_title}'"
 
